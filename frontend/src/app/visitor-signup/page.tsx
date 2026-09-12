@@ -18,10 +18,12 @@ import {
   completeVisitorSignup,
 } from '@/api/auth/signup-otp.api';
 import { Mail, ArrowLeft, KeyRound } from 'lucide-react';
+import OtpInput from "@/components/auth/OtpInput";
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [otp, setOtp] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -53,13 +55,18 @@ const SignupPage: React.FC = () => {
     setError(null);
 
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
-      setError('Email and password are required.');
+    if (!trimmedEmail || !password || !confirmPassword) {
+      setError('Email, password, and confirmation are required.');
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
 
@@ -213,6 +220,17 @@ const SignupPage: React.FC = () => {
                       required
                     />
                   </div>
+                  <div className="border-black border-solid border-2 border-opacity-70 rounded-md flex flex-row space-y-1.5">
+                    <Input
+                      className="h-12 pl-6 pb-3 text-base"
+                      type="password"
+                      id="confirmPassword"
+                      placeholder="Confirm Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
 
                 {error && (
@@ -286,22 +304,12 @@ const SignupPage: React.FC = () => {
               </p>
 
               <form onSubmit={handleVerifyAndRegister} className="mt-6">
-                <div className="border-black border-solid border-2 border-opacity-70 rounded-md flex flex-row space-y-1.5">
-                  <Input
-                    className="h-12 text-center text-2xl font-mono tracking-widest uppercase font-bold"
-                    type="text"
-                    id="otp"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      setOtp(val);
-                    }}
-                    autoFocus
-                    required
-                  />
-                </div>
+                <OtpInput
+                  length={6}
+                  value={otp}
+                  onChange={(val) => setOtp(val)}
+                  disabled={isLoading}
+                />
 
                 {error && (
                   <p className="text-red-500 text-sm text-center mt-2.5">{error}</p>

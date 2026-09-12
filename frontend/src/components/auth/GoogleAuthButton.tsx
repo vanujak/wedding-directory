@@ -54,7 +54,9 @@ export default function GoogleAuthButton({
 
         const target =
           redirectTo ||
-          (role === 'vendor' ? '/vendor-dashboard' : '/visitor-dashboard');
+          (role === 'vendor'
+            ? (response.isNewUser ? '/vendor-onboarding' : '/vendor-dashboard')
+            : '/visitor-dashboard');
         router.push(target);
       } else {
         toast.error('Failed to retrieve authentication token.', { id: toastId });
