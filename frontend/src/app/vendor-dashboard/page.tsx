@@ -5,7 +5,7 @@ import Header from "@/components/shared/Headers/Header";
 import VendorBanner from "@/components/vendor-dashboard/VendorBanner";
 import OfferingCard from "@/components/vendor-search/OfferingCard";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { GET_VENDOR_BY_ID, FIND_SERVICES_BY_VENDOR } from "@/graphql/queries";
 import { useVendorAuth } from "@/contexts/VendorAuthContext";
 import { useQuery } from "@apollo/client";
@@ -18,6 +18,7 @@ import BookingCalendar from "@/components/vendor-dashboard/BookingCalendar";
 import VendorApprovalRequests from "@/components/vendor-dashboard/VendorApprovalRequests";
 
 const VendorDashBoardContent: React.FC = () => {
+  const router = useRouter();
   const { vendor } = useVendorAuth();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -42,6 +43,17 @@ const VendorDashBoardContent: React.FC = () => {
     variables: { id: vendor?.id },
     skip: !vendor?.id,
   });
+
+  // If vendor profile is incomplete (missing city, phone, or location), redirect to onboarding
+  useEffect(() => {
+    if (vendorData?.findVendorById) {
+      const v = vendorData.findVendorById;
+      const isIncomplete = !v.city || !v.phone || !v.location;
+      if (isIncomplete) {
+        router.push("/vendor-onboarding");
+      }
+    }
+  }, [vendorData, router]);
 
   const {
     data: servicesData,
