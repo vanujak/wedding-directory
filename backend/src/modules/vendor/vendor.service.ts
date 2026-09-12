@@ -20,12 +20,49 @@ export class VendorService {
     this.vendorRepository = VendorRepository(this.dataSource);
   }
 
-  async autocompleteLocation(input: string) {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&key=${apiKey}`;
+  async autocompleteLocation(input: string): Promise<string[]> {
+    if (!input || !input.trim()) return [];
 
-    const response = await firstValueFrom(this.httpService.get(url));
-    return response.data;
+    try {
+      // 1. Primary: Use OpenStreetMap Nominatim (Free, no billing or API key required)
+      const osmUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        input.trim()
+      )}&format=json&addressdetails=1&limit=6&countrycodes=lk`;
+
+      const osmResponse = await firstValueFrom(
+        this.httpService.get(osmUrl, {
+          headers: {
+            'User-Agent': 'SayIDo-WeddingDirectory/1.0 (contact: sayidolk@gmail.com)',
+            'Accept-Language': 'en',
+          },
+        })
+      );
+
+      if (Array.isArray(osmResponse.data) && osmResponse.data.length > 0) {
+        return osmResponse.data.map((item: any) => item.display_name);
+      }
+    } catch (osmError) {
+      console.warn('Nominatim autocomplete error, checking Google Places fallback:', osmError?.message);
+    }
+
+    // 2. Fallback to Google Places if configured and working
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (apiKey) {
+        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+          input
+        )}&components=country:lk&key=${apiKey}`;
+
+        const response = await firstValueFrom(this.httpService.get(url));
+        if (response.data?.predictions && response.data.predictions.length > 0) {
+          return response.data.predictions.map((p: any) => p.description);
+        }
+      }
+    } catch (gError) {
+      console.warn('Google Places autocomplete fallback failed:', gError?.message);
+    }
+
+    return [];
   }
 
   async findAllVendors(): Promise<VendorEntity[]> {

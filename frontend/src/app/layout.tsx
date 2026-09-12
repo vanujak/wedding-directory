@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AuthProvider as VisitorAuthProvider } from "@/contexts/VisitorAuthContext";
 import ApolloWrapper from "@/apollo/ApolloWrapper";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import PageTransition from "@/components/PageTransition";
 import { VendorAuthProvider } from "@/contexts/VendorAuthContext";
 import { Toaster } from "react-hot-toast";

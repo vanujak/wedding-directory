@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+﻿import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { VendorModel } from '../models/vendor.model';
 import { VendorEntity } from '../../database/entities/vendor.entity';
 import { VendorService } from '../../modules/vendor/vendor.service';
@@ -22,9 +22,8 @@ export class VendorResolver {
   }
 
   @Query(() => [String])
-  async autocompleteLocation(@Args('input') input: string) {
-    const result = await this.vendorService.autocompleteLocation(input);
-    return result.predictions.map((place) => place.description);
+  async autocompleteLocation(@Args('input') input: string): Promise<string[]> {
+    return this.vendorService.autocompleteLocation(input);
   }
 
   @Mutation(() => VendorModel)
