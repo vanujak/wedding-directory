@@ -18,9 +18,9 @@ export class CompleteVisitorSignupDto {
 export class CompleteVendorSignupDto {
   email: string;
   password: string;
-  fname: string;
-  lname: string;
-  busname: string;
+  fname?: string;
+  lname?: string;
+  busname?: string;
   phone?: string;
   city?: string;
   location?: string;

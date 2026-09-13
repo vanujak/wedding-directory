@@ -597,9 +597,9 @@ export class AuthService {
     const vendor = await this.vendorService.createVendor({
       email: normalizedEmail,
       password: dto.password,
-      fname: dto.fname,
-      lname: dto.lname,
-      busname: dto.busname,
+      fname: dto.fname || 'Vendor',
+      lname: dto.lname || '',
+      busname: dto.busname || 'My Business',
       phone: dto.phone || '',
       city: dto.city || '',
       location: dto.location || '',

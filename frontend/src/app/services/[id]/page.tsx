@@ -517,7 +517,7 @@ const Service: React.FC = () => {
                         .map((pkg: Package) => (
                           <div
                             key={pkg.id}
-                            className="bg-white rounded-xl border-2 border-gray-200 shadow-md overflow-hidden transition-all hover:shadow-lg flex flex-col h-full"
+                            className="bg-white rounded-2xl border-2 border-gray-200 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:border-orange flex flex-col h-full"
                           >
                             {pkg.image && (
                               <div className="relative w-full h-44 overflow-hidden border-b border-gray-200">
@@ -530,7 +530,7 @@ const Service: React.FC = () => {
                               </div>
                             )}
                             <div className="p-4 text-center bg-gray-50 border-b border-gray-200">
-                              <h3 className="text-xl font-bold text-gray-800">
+                              <h3 className="text-xl font-bold font-title text-gray-900">
                                 {pkg.name}
                               </h3>
                               <div className="mt-2 flex justify-center">
@@ -551,22 +551,22 @@ const Service: React.FC = () => {
                             </div>
                             <div className="p-6 flex flex-col flex-grow">
                               <div className="text-center mb-6">
-                                <div className="text-3xl font-bold text-orange">
-                                  <span className="text-sm align-top text-gray-600">
+                                <div className="text-3xl font-bold font-title text-orange">
+                                  <span className="text-sm align-top text-gray-500 font-body font-normal">
                                     LKR
                                   </span>{" "}
                                   {pkg.pricing.toLocaleString()}
                                 </div>
-                                <p className="text-gray-600 mt-2">
+                                <p className="text-gray-500 font-body text-sm mt-2">
                                   {pkg.description}
                                 </p>
                               </div>
-                              <div className="space-y-3 mb-6 min-h-[100px]">
+                              <div className="space-y-2.5 mb-6 min-h-[100px]">
                                 {pkg.features.map(
                                   (feature: string, idx: number) => (
-                                    <div key={idx} className="flex items-start">
+                                    <div key={idx} className="flex items-start text-sm text-gray-600 font-body">
                                       <svg
-                                        className="w-5 h-5 text-green-500 mr-2 flex-shrink-0"
+                                        className="w-4 h-4 text-emerald-500 mr-2 mt-0.5 flex-shrink-0"
                                         fill="currentColor"
                                         viewBox="0 0 20 20"
                                       >
@@ -576,7 +576,7 @@ const Service: React.FC = () => {
                                           clipRule="evenodd"
                                         />
                                       </svg>
-                                      <span className="text-gray-700">
+                                      <span>
                                         {feature}
                                       </span>
                                     </div>
@@ -585,19 +585,37 @@ const Service: React.FC = () => {
                               </div>
                               <div className="pt-4 border-t border-gray-100 mt-auto">
                                   {(() => {
+                                    // 1. Vendor viewing their own packages (cannot book their own services)
+                                    if (isVendorsOffering) {
+                                      return (
+                                        <div className="w-full flex flex-col items-center gap-1.5">
+                                          <Link
+                                            href={`/services/edit/${offering?.id}`}
+                                            className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white bg-orange hover:bg-orange/90 active:scale-[0.99] shadow-sm shadow-orange/20 transition-all flex items-center justify-center gap-2"
+                                          >
+                                            <FiEdit className="text-base" />
+                                            <span>Edit Package</span>
+                                          </Link>
+                                          <span className="text-[11px] text-gray-400 text-center font-body">
+                                            Couple advance: LKR {(pkg.pricing * 0.2).toLocaleString()} (20%)
+                                          </span>
+                                        </div>
+                                      );
+                                    }
+
+                                    // 2. Already booked package by visitor
                                     const bookingStatus = isPackageBooked(pkg.id);
-                                    
                                     if (bookingStatus.booked && !bookingStatus.expired) {
                                       return (
-                                        <div className="w-full py-3 px-4 rounded-[22px] font-bold bg-green-100 text-green-800 border-2 border-green-500 flex flex-col items-center">
-                                          <span className="flex items-center gap-2">
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <div className="w-full py-3 px-4 rounded-xl font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 flex flex-col items-center text-center">
+                                          <span className="flex items-center gap-2 text-sm font-semibold">
+                                            <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
                                             You Booked This Package
                                           </span>
                                           {bookingStatus.bookingDate && (
-                                            <span className="text-sm font-normal mt-1">
+                                            <span className="text-xs font-normal text-emerald-700 mt-1">
                                               Booking Date: {bookingStatus.bookingDate.toLocaleDateString()}
                                             </span>
                                           )}
@@ -605,7 +623,7 @@ const Service: React.FC = () => {
                                       );
                                     }
 
-                                    // Check if package requires prior vendor approval
+                                    // 3. Approval flow
                                     if (pkg.requiresApproval) {
                                       const approvalReq = (visitorApprovalsData?.getVisitorApprovalRequests || []).find(
                                         (r: any) => r.package?.id === pkg.id
@@ -615,8 +633,8 @@ const Service: React.FC = () => {
                                         if (approvalReq.status === "pending") {
                                           return (
                                             <div className="w-full flex flex-col items-center gap-1.5">
-                                              <div className="w-full py-3 px-4 rounded-[22px] font-bold text-amber-800 bg-amber-50 border border-amber-300 flex flex-col items-center text-center">
-                                                <span className="text-sm flex items-center gap-1.5 font-bold">
+                                              <div className="w-full py-2.5 px-4 rounded-xl font-semibold text-amber-800 bg-amber-50 border border-amber-200 flex flex-col items-center text-center">
+                                                <span className="text-sm flex items-center gap-1.5 font-semibold">
                                                   <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
                                                   Approval Pending
                                                 </span>
@@ -637,9 +655,9 @@ const Service: React.FC = () => {
                                                   const advanceAmount = pkg.pricing * 0.2;
                                                   handlePayAdvance(advanceAmount, pkg.id, new Date(approvalReq.bookingDate));
                                                 }}
-                                                className="w-full py-3 px-4 rounded-[22px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all flex flex-col items-center shadow-md animate-in fade-in"
+                                                className="w-full py-2.5 px-4 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all flex flex-col items-center shadow-sm shadow-emerald-600/20"
                                               >
-                                                <span className="flex items-center gap-1.5">
+                                                <span className="flex items-center gap-1.5 text-sm">
                                                   <ShieldCheck className="w-4 h-4" />
                                                   Approved! Pay 20% Advance
                                                 </span>
@@ -672,7 +690,7 @@ const Service: React.FC = () => {
                                                   }
                                                   setApprovalPackage(pkg);
                                                 }}
-                                                className="w-full py-2.5 px-4 rounded-[22px] font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors text-xs flex items-center justify-center gap-1.5"
+                                                className="w-full py-2 px-4 rounded-xl font-semibold text-accent bg-accent/10 hover:bg-accent hover:text-white transition-all text-xs flex items-center justify-center gap-1.5 active:scale-[0.99]"
                                               >
                                                 Request with Another Date
                                               </button>
@@ -694,7 +712,7 @@ const Service: React.FC = () => {
                                                   }
                                                   setApprovalPackage(pkg);
                                                 }}
-                                                className="w-full py-2.5 px-4 rounded-[22px] font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors text-xs flex items-center justify-center gap-1.5"
+                                                className="w-full py-2 px-4 rounded-xl font-semibold text-accent bg-accent/10 hover:bg-accent hover:text-white transition-all text-xs flex items-center justify-center gap-1.5 active:scale-[0.99]"
                                               >
                                                 Request Approval Again
                                               </button>
@@ -712,9 +730,9 @@ const Service: React.FC = () => {
                                             }
                                             setApprovalPackage(pkg);
                                           }}
-                                          className="w-full py-3 px-4 rounded-[22px] font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex flex-col items-center shadow-sm"
+                                          className="w-full py-2.5 px-4 rounded-xl font-semibold text-white bg-accent hover:bg-accent/90 active:scale-[0.99] transition-all flex flex-col items-center shadow-sm shadow-accent/20"
                                         >
-                                          <span className="flex items-center gap-1.5">
+                                          <span className="flex items-center gap-1.5 text-sm">
                                             <ShieldCheck className="w-4 h-4" />
                                             Request Vendor Approval
                                           </span>
@@ -725,10 +743,11 @@ const Service: React.FC = () => {
                                       );
                                     }
 
+                                    // 4. Booking expired
                                     if (bookingStatus.expired) {
                                       return (
-                                        <div className="space-y-2">
-                                          <div className="text-sm text-yellow-600 text-center mb-2">
+                                        <div className="space-y-2 w-full">
+                                          <div className="text-xs text-amber-600 text-center font-medium">
                                             Previous booking expired. You can book again.
                                           </div>
                                           <button
@@ -737,16 +756,16 @@ const Service: React.FC = () => {
                                                 toast.error("Please login as a user to pay advance");
                                                 return;
                                               }
-
                                               handleBookingClick(pkg);
                                             }}
-                                            className={`w-full py-3 px-4 rounded-[22px] font-bold text-white hover:border-2 transition-colors flex flex-col items-center ${pkg.requiresReservation
-                                              ? "bg-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-600"
-                                              : "bg-orange hover:bg-white hover:text-orange hover:border-orange"
+                                            className={`w-full py-2.5 px-4 rounded-xl font-semibold text-white active:scale-[0.99] transition-all flex flex-col items-center shadow-sm ${
+                                              pkg.requiresReservation
+                                                ? "bg-accent hover:bg-accent/90 shadow-accent/20"
+                                                : "bg-orange hover:bg-orange/90 shadow-orange/20"
                                             }`}
                                           >
-                                            <span>Book Again</span>
-                                            <span className="font-normal text-xs">
+                                            <span className="text-sm">Book Again</span>
+                                            <span className="font-normal text-xs opacity-90">
                                               20% Advance: LKR {(pkg.pricing * 0.2).toLocaleString()}
                                             </span>
                                           </button>
@@ -754,6 +773,7 @@ const Service: React.FC = () => {
                                       );
                                     }
 
+                                    // 5. Standard booking
                                     return (
                                       <button
                                         onClick={() => {
@@ -761,18 +781,18 @@ const Service: React.FC = () => {
                                             toast.error("Please login as a user to pay advance");
                                             return;
                                           }
-
                                           handleBookingClick(pkg);
                                         }}
-                                        className={`w-full py-3 px-4 rounded-[22px] font-bold text-white hover:border-2 transition-colors flex flex-col items-center ${pkg.requiresReservation
-                                          ? "bg-blue-600 hover:bg-white hover:text-blue-600 hover:border-blue-600"
-                                          : "bg-orange hover:bg-white hover:text-orange hover:border-orange"
+                                        className={`w-full py-2.5 px-4 rounded-xl font-semibold text-white active:scale-[0.99] transition-all flex flex-col items-center shadow-sm ${
+                                          pkg.requiresReservation
+                                            ? "bg-accent hover:bg-accent/90 shadow-accent/20"
+                                            : "bg-orange hover:bg-orange/90 shadow-orange/20"
                                         }`}
                                       >
-                                        <span>
+                                        <span className="text-sm">
                                           {pkg.requiresReservation ? "See Details & Book" : "Select Date & Book"}
                                         </span>
-                                        <span className="font-normal text-xs">
+                                        <span className="font-normal text-xs opacity-90">
                                           20% Advance: LKR {(pkg.pricing * 0.2).toLocaleString()}
                                         </span>
                                       </button>
@@ -801,17 +821,7 @@ const Service: React.FC = () => {
               <div className="mt-4">
                 <Comments serviceId={offering?.id} />
               </div>
-              <hr className="border-t border-gray-100 my-6" />
-              <h2 className="mb-3 text-xl font-bold font-title text-gray-900">Contact</h2>
-              <div className="flex flex-col gap-y-1.5 text-sm text-gray-600 font-body">
-                <div>
-                  <span className="font-semibold text-gray-800">Email:</span> {offering.bus_email || "Email not available"}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-800">Phone number:</span>{" "}
-                  {offering.bus_phone || "Phone number not available"}
-                </div>
-              </div>
+
               <hr className="border-t border-gray-100 my-6" />
               <h2 className="mb-3 text-xl font-bold font-title text-gray-900">Location</h2>
               <div>
