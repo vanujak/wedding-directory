@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import LoaderJelly from '@/components/shared/Loaders/LoaderJelly';
+import OtpInput from '@/components/auth/OtpInput';
 import {
   requestPasswordResetOtp,
   verifyPasswordResetOtp,
@@ -73,6 +74,7 @@ const ForgotPasswordForm = () => {
         style: { background: '#333', color: '#fff' },
       });
       setResendTimer(60);
+      setOtp('');
       setStep(2);
     } catch (err: any) {
       const errorMsg =
@@ -282,22 +284,12 @@ const ForgotPasswordForm = () => {
           </p>
 
           <form onSubmit={handleVerifyOtp} className="mt-6">
-            <div className="border-black border-solid border-2 border-opacity-70 rounded-md flex flex-row space-y-1.5">
-              <Input
-                className="h-12 text-center text-2xl font-mono tracking-widest uppercase font-bold"
-                type="text"
-                id="otp"
-                maxLength={6}
-                placeholder="000000"
-                value={otp}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '');
-                  setOtp(val);
-                }}
-                autoFocus
-                required
-              />
-            </div>
+            <OtpInput
+              length={6}
+              value={otp}
+              onChange={(val) => setOtp(val)}
+              disabled={isLoading}
+            />
 
             {error && (
               <p className="text-red-500 text-sm text-center mt-2.5">{error}</p>
@@ -306,6 +298,7 @@ const ForgotPasswordForm = () => {
             <div className="mt-6 flex flex-col w-full">
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="rounded-none text-white font-bold hover:bg-orange bg-orange text-base sm:text-lg h-12"
               >
                 Verify Code
@@ -320,8 +313,9 @@ const ForgotPasswordForm = () => {
                   setOtp('');
                   setError(null);
                 }}
-                className="text-gray-500 hover:text-gray-800 underline"
+                className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-800 underline"
               >
+                <ArrowLeft className="w-3.5 h-3.5" />
                 Change email
               </button>
 
@@ -333,6 +327,7 @@ const ForgotPasswordForm = () => {
                 <button
                   type="button"
                   onClick={handleResendOtp}
+                  disabled={isLoading}
                   className="text-orange font-semibold hover:underline"
                 >
                   Resend Code

@@ -347,6 +347,12 @@ export class AuthService {
       let visitor = await this.visitorService.getVisitorByEmail(email);
       let isNewUser = false;
       if (!visitor) {
+        const existingVendor = await this.vendorService.getVendorByEmail(email);
+        if (existingVendor) {
+          throw new BadRequestException(
+            'This email address is already registered as a Vendor. Please sign in with your vendor account.',
+          );
+        }
         visitor = await this.visitorService.createGoogleVisitor({
           email,
           visitor_fname: payload.given_name || payload.name || 'Visitor',
@@ -367,6 +373,12 @@ export class AuthService {
       let vendor = await this.vendorService.getVendorByEmail(email);
       let isNewUser = false;
       if (!vendor) {
+        const existingVisitor = await this.visitorService.getVisitorByEmail(email);
+        if (existingVisitor) {
+          throw new BadRequestException(
+            'This email address is already registered as a Couple / Visitor. Please sign in with your visitor account.',
+          );
+        }
         vendor = await this.vendorService.createGoogleVendor({
           email,
           fname: payload.given_name || payload.name || 'Vendor',
@@ -395,20 +407,31 @@ export class AuthService {
       throw new BadRequestException('Email address is required.');
     }
 
-    // Check if account already exists
-    if (role === 'visitor') {
-      const existing = await this.visitorService.getVisitorByEmail(email);
-      if (existing) {
-        throw new BadRequestException(
-          'An account with this email address already exists. Please log in instead.',
-        );
-      }
-    } else {
-      const existing = await this.vendorService.getVendorByEmail(email);
-      if (existing) {
-        throw new BadRequestException(
-          'A vendor account with this email address already exists. Please log in instead.',
-        );
+    // Check if account already exists across visitor and vendor
+    const existingVisitor = await this.visitorService.getVisitorByEmail(email);
+    const existingVendor = await this.vendorService.getVendorByEmail(email);
+
+    if (existingVisitor || existingVendor) {
+      if (role === 'visitor') {
+        if (existingVisitor) {
+          throw new BadRequestException(
+            'An account with this email address already exists. Please log in instead.',
+          );
+        } else {
+          throw new BadRequestException(
+            'This email address is already registered as a Vendor. Please log in to your vendor account or use a different email.',
+          );
+        }
+      } else {
+        if (existingVendor) {
+          throw new BadRequestException(
+            'A vendor account with this email address already exists. Please log in instead.',
+          );
+        } else {
+          throw new BadRequestException(
+            'This email address is already registered as a Couple / Visitor. Please log in or use a different email.',
+          );
+        }
       }
     }
 
@@ -545,9 +568,13 @@ export class AuthService {
       throw new BadRequestException('Verified email does not match form email.');
     }
 
-    const existing = await this.visitorService.getVisitorByEmail(normalizedEmail);
-    if (existing) {
+    const existingVisitor = await this.visitorService.getVisitorByEmail(normalizedEmail);
+    const existingVendor = await this.vendorService.getVendorByEmail(normalizedEmail);
+    if (existingVisitor) {
       throw new BadRequestException('An account with this email address already exists.');
+    }
+    if (existingVendor) {
+      throw new BadRequestException('This email address is already registered as a Vendor.');
     }
 
     const visitor = await this.visitorService.create({
@@ -589,9 +616,13 @@ export class AuthService {
       throw new BadRequestException('Verified email does not match form email.');
     }
 
-    const existing = await this.vendorService.getVendorByEmail(normalizedEmail);
-    if (existing) {
+    const existingVendor = await this.vendorService.getVendorByEmail(normalizedEmail);
+    const existingVisitor = await this.visitorService.getVisitorByEmail(normalizedEmail);
+    if (existingVendor) {
       throw new BadRequestException('A vendor with this email address already exists.');
+    }
+    if (existingVisitor) {
+      throw new BadRequestException('This email address is already registered as a Couple / Visitor.');
     }
 
     const vendor = await this.vendorService.createVendor({
