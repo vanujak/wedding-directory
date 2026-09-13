@@ -170,7 +170,7 @@ const PackageApprovalRequestModal: React.FC<PackageApprovalRequestModalProps> = 
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Provide wedding venue details, timing, guest count or any special requirements for the vendor..."
                     rows={3}
-                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange bg-white"
                   />
                 </div>
 
@@ -208,7 +208,7 @@ const PackageApprovalRequestModal: React.FC<PackageApprovalRequestModalProps> = 
                         LKR {pkg.pricing.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-blue-600 font-bold text-base">
+                    <div className="flex justify-between items-center text-orange font-bold text-base">
                       <span>Advance to pay after approval (20%)</span>
                       <span>LKR {advanceAmount.toLocaleString()}</span>
                     </div>
@@ -217,7 +217,7 @@ const PackageApprovalRequestModal: React.FC<PackageApprovalRequestModalProps> = 
                   <Button
                     onClick={handleSubmit}
                     disabled={!selectedDate || isSubmitting}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 text-base rounded-full flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 transition-colors"
+                    className="w-full bg-orange hover:bg-orange/90 text-white font-bold py-6 text-base rounded-full flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 transition-colors"
                   >
                     {isSubmitting ? (
                       <>
